@@ -4,7 +4,7 @@ import sys
 import re
 from pathlib import Path
 
-from report_generator import extract_report_to_csv
+from report_generator import extract_report_to_csv, send_email
 from file_conversions import convert_csv_to_excel, convert_csv_to_pdf
 
 
@@ -109,3 +109,10 @@ if __name__ == '__main__':
     elif args.exportexcel and not args.emailexcelto and not args.emailpdfto:
         file_path = extract_report_to_csv(dates[0], dates[1], path)
         convert_csv_to_excel(file_path)
+
+    if args.emailexcelto:
+        convert_csv_to_excel(file_path)
+        send_email(f'{file_path}.xlsx', dates[0], dates[1])
+    elif args.emailpdfto:
+        convert_csv_to_pdf(file_path)
+        send_email(f'{file_path}.pdf', dates[0], dates[1])
