@@ -61,7 +61,7 @@ def email_is_valid(email):
 
 def args_are_valid(args, dates, path):
     """
-    Checks if the parsed arguments are valid. It returns True if they are or the appropriate error message. 
+    Checks if the parsed arguments are valid. It returns True if they are or the appropriate error message if not. 
     """
     errors = {
         'export': 'Error: only one type of export must be given.',
