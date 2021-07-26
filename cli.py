@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 from report_generator import extract_report_to_csv
+from file_conversions import convert_csv_to_excel, convert_csv_to_pdf
 
 
 def read_input_args():
@@ -100,3 +101,11 @@ if __name__ == '__main__':
         sys.exit()
 
     file_path = extract_report_to_csv(dates[0], dates[1], path)
+
+    # check if any optional arguments have been passed
+    if args.exportpdf and not args.emailexcelto and not args.emailpdfto:
+        file_path = extract_report_to_csv(dates[0], dates[1], path)
+        convert_csv_to_pdf(file_path)
+    elif args.exportexcel and not args.emailexcelto and not args.emailpdfto:
+        file_path = extract_report_to_csv(dates[0], dates[1], path)
+        convert_csv_to_excel(file_path)
