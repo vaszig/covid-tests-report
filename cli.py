@@ -4,6 +4,9 @@ import sys
 import re
 from pathlib import Path
 
+from report_generator import extract_report_to_csv
+
+
 def read_input_args():
     """
     Parsing positional and optional arguments from CLI.
@@ -95,3 +98,5 @@ if __name__ == '__main__':
     if errors:
         print(errors)
         sys.exit()
+
+    file_path = extract_report_to_csv(dates[0], dates[1], path)
