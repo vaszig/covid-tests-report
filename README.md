@@ -42,6 +42,11 @@ Dates and path are positional arguments and are mandatory. The dates must be in 
   * convert to pdf and email file  
   `python3 cli.py <starting date> <ending date> <path> -epdf <email_address>`  
 
+# How to run tests  
+
+The tests of the application have been written by using unittest library and can be run by typing the following command:  
+`python3 -m unittest tests`  
+
 # Cronjob
 
 We can schedule a cronjob (by using the crontab of linux) in order to receive an email with the report as an excel attachment at the time we want. We type the next commands in a terminal. The example refers to a report which is generated at every Monday at 06:00 and extracts the data of the previous week (Monday to Sunday).  
