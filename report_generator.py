@@ -3,6 +3,8 @@ import smtplib
 import datetime as dt
 from email.message import EmailMessage
 
+from psycopg2 import sql
+
 from db_connection import get_psql_conn
 
 
@@ -20,22 +22,26 @@ def extract_report_to_csv(start_date, end_date, file_path):
     
     with get_psql_conn() as conn:
         cur = conn.cursor()
-        sql_query = (
-                "SELECT app.start_time, app.test_kind, loc.name, "
-                "sum(case when tr.result_time is not null then 1 end) as number_of_tests, "
-                "sum(case when tr.result_time is null then 1 end) as tests_not_taken "
-                "FROM test_results tr "
-                "RIGHT OUTER JOIN appointments app "
-                "ON tr.appointment_id=app.id "
-                "INNER JOIN locations loc "
-                "ON app.location_id=loc.id "
-                f"WHERE app.start_time BETWEEN '{start_date} 00:00:00' AND '{end_date} 23:59:00' "
-                "GROUP BY app.start_time, app.test_kind, loc.name "
-                "ORDER BY app.start_time"
-        )
-    
+        sql_statement = """COPY(
+            SELECT app.start_time::date as "Date of appointment", 
+                   app.test_kind as "Kind of test (pcr/antigen)", 
+                   loc.name as "Test location",
+            sum(case when tr.result_time is not null then 1 end) as "Number of taken tests",
+            sum(case when tr.result_time is null then 1 end) as "Number of not taken tests"
+            FROM test_results tr
+            RIGHT OUTER JOIN appointments app
+            ON tr.appointment_id=app.id
+            INNER JOIN locations loc
+            ON app.location_id=loc.id
+            WHERE app.start_time::date between {start_date} AND {end_date}
+            GROUP BY app.start_time::date, app.test_kind, loc.name
+            ORDER BY app.start_time::date
+        )TO STDOUT WITH CSV HEADER"""
+        
+        sql_query = sql.SQL(sql_statement).format(start_date=sql.Literal(start_date), end_date=sql.Literal(end_date))
+        
         with open(f'{file_path}.csv', "w") as file:
-            cur.copy_expert(f'COPY ({sql_query}) TO STDOUT WITH CSV HEADER', file)
+            cur.copy_expert(sql_query, file)
     
     return file_path
 
