@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 from report_generator import extract_report_to_csv, send_email
-from file_conversions import convert_csv_to_excel, convert_csv_to_pdf
+from file_conversions import convert_csv_to_excel
 
 
 def read_input_args():
@@ -16,10 +16,8 @@ def read_input_args():
 
     parser.add_argument('dates', metavar='dates', help='enter the date range (yyyy-mm-dd yyyy-mm-dd)', nargs=2)
     parser.add_argument('path', metavar='path', help='enter the absolut path to which the csv file will be saved')
-    parser.add_argument('-topdf', '--exportpdf', action='store_true', help='exports the report to a pdf file in the specified path')
     parser.add_argument('-toexcel', '--exportexcel', action='store_true', help='exports the report to an excel file in the specified path')
     parser.add_argument('-eexcel', '--emailexcelto', action='store', help='sends the excel report via email')
-    parser.add_argument('-epdf', '--emailpdfto', action='store', help='sends the pdf report via email')
 
     args = parser.parse_args()
     return args
@@ -64,13 +62,13 @@ def args_are_valid(args, dates, path):
     Checks if the parsed arguments are valid. It returns True if they are or the appropriate error message if not. 
     """
     errors = {
-        'export': 'Error: only one type of export must be given.',
+        'export': 'Error: email can be sent by passing only -eexcel argument.',
         'dates': 'Error: the dates are not correct. The format should be yyyy-mm-dd and starting date before ending date.',
         'path': 'Error: path does not exist.',
         'email': 'Error: wrong type of email.'
     }
 
-    if args.exportpdf and args.exportexcel:
+    if args.exportexcel and args.emailexcelto:
         return False, errors['export']
 
     if not are_dates_valid(*dates):
@@ -81,9 +79,6 @@ def args_are_valid(args, dates, path):
     
     if args.emailexcelto:
         if not email_is_valid(args.emailexcelto):
-            return False, errors['email']
-    elif args.emailpdfto:
-        if not email_is_valid(args.emailpdfto):
             return False, errors['email']
     
     return True, None
@@ -103,16 +98,10 @@ if __name__ == '__main__':
     file_path = extract_report_to_csv(dates[0], dates[1], path)
 
     # check if any optional arguments have been passed
-    if args.exportpdf and not args.emailexcelto and not args.emailpdfto:
-        file_path = extract_report_to_csv(dates[0], dates[1], path)
-        convert_csv_to_pdf(file_path)
-    elif args.exportexcel and not args.emailexcelto and not args.emailpdfto:
+    if args.exportexcel:
         file_path = extract_report_to_csv(dates[0], dates[1], path)
         convert_csv_to_excel(file_path)
 
     if args.emailexcelto:
         convert_csv_to_excel(file_path)
         send_email(f'{file_path}.xlsx', dates[0], dates[1])
-    elif args.emailpdfto:
-        convert_csv_to_pdf(file_path)
-        send_email(f'{file_path}.pdf', dates[0], dates[1])
