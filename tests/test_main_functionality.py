@@ -29,7 +29,13 @@ class TestReportGenerator(unittest.TestCase):
                 else:
                     line_count += 1
             
-            expected_columns = ['start_time', 'test_kind', 'name', 'number_of_tests', 'tests_not_taken']
+            expected_columns = [
+                'Date of appointment',
+                'Kind of test (pcr/antigen)',
+                'Test location',
+                'Number of taken tests',
+                'Number of not taken tests'
+            ]
             self.assertEqual(columns, expected_columns)
             self.assertEqual(line_count, 4)
 
