@@ -46,23 +46,39 @@ def extract_report_to_csv(start_date, end_date, file_path):
     return file_path
 
 
-def send_email(converted_file, start_date, end_date):
+def body_email(**kwargs):
     """
-    Defines all the necessary information for sending the report by an email.
-    The email is sent with the excel file as an attachment.
+    Prepares the body of the email depending on the kind of message.
+    Message can be error type or the normal message with the excel file attached.
     """
+    if 'error' in kwargs.keys():
+        msg = EmailMessage()
+        msg['Subject'] = 'Error Report'
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = EMAIL_ADDRESS
+        msg.set_content(
+            f'An error has occured concerning the report for the period {kwargs["start_date"]} - {kwargs["end_date"]}\n\n{kwargs["error"]}'
+        )
+        return msg
+        
     msg = EmailMessage()
     msg['Subject'] = 'Weekly covid-tests report'
     msg['From'] = EMAIL_ADDRESS
     msg['To'] = EMAIL_ADDRESS
-    msg.set_content(f'You can find attached the report for the period {start_date} - {end_date}')
+    msg.set_content(f'You can find attached the report for the period {kwargs["start_date"]} - {kwargs["end_date"]}')
 
-    with open(converted_file, 'rb') as f:
+    with open(f'{kwargs["file_path"]}.xlsx', 'rb') as f:
         file_data = f.read()
         file_name = f.name
 
     msg.add_attachment(file_data, maintype='application', subtype='octet-stream', filename=file_name)
+    
+    return msg
 
+def send_email(body):
+    """
+    By receiving the suitable body, sends the email.
+    """
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        smtp.send_message(msg)
+        smtp.send_message(body)

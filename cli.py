@@ -4,7 +4,7 @@ import sys
 import re
 from pathlib import Path
 
-from report_generator import extract_report_to_csv, send_email
+from report_generator import extract_report_to_csv, body_email, send_email
 from file_conversions import convert_csv_to_excel
 
 
@@ -104,4 +104,5 @@ if __name__ == '__main__':
 
     if args.emailexcelto:
         convert_csv_to_excel(file_path)
-        send_email(f'{file_path}.xlsx', dates[0], dates[1])
+        body = body_email(file_path=file_path, start_date=dates[0], end_date=dates[1])
+        send_email(body)
